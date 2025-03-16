@@ -22,7 +22,7 @@ emotion_analyzer = pipeline("text-classification", model="michellejieli/emotion_
 # Initialize the speaker diarization pipeline
 diarization_pipeline = Pipeline.from_pretrained(
     "pyannote/speaker-diarization-3.1",
-    use_auth_token="UR ACCESS TOKEN"
+    #use_auth_token="UR ACCESS TOKEN"
 )
 diarization_pipeline.to(torch.device(device))
 
