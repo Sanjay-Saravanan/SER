@@ -5,16 +5,12 @@ from pydub import AudioSegment
 import torch
 import whisper
 from transformers import pipeline
-import pyaudio
-import wave
-import threading
+from pyannote.audio import Pipeline
 import warnings
-
 
 app = Flask(__name__)
 UPLOAD_FOLDER = "uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 print(f"Device set to use {device}")
@@ -22,6 +18,13 @@ print(f"Device set to use {device}")
 whisper_model = whisper.load_model("large", device=device)
 emotion_analyzer = pipeline("text-classification", model="michellejieli/emotion_text_classifier",
                             device=0 if torch.cuda.is_available() else -1)
+
+# Initialize the speaker diarization pipeline
+diarization_pipeline = Pipeline.from_pretrained(
+    "pyannote/speaker-diarization-3.1",
+    use_auth_token="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"
+)
+diarization_pipeline.to(torch.device(device))
 
 warnings.filterwarnings("ignore", category=UserWarning, message=".*weights_only=False.*")
 
@@ -163,50 +166,13 @@ def index():
 
                 result.forEach((segment, index) => {
                     const p = document.createElement('p');
-                    p.innerHTML = `<strong>Segment ${index + 1}:</strong><br>Text: ${segment.text}<br>Emotions: ${JSON.stringify(segment.emotions)}`;
+                    p.innerHTML = `<strong>Speaker ${segment.speaker}:</strong><br>Text: ${segment.text}<br>Emotions: ${JSON.stringify(segment.emotions)}`;
                     resultDiv.appendChild(p);
                 });
 
                 resultDiv.scrollIntoView({ behavior: 'smooth' });
             }
 
-            async function startRealtimeDetection() {
-                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                const mediaRecorder = new MediaRecorder(stream);
-                let audioChunks = [];
-
-                mediaRecorder.ondataavailable = (event) => {
-                    audioChunks.push(event.data);
-                };
-
-                mediaRecorder.onstop = async () => {
-                    const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-                    const formData = new FormData();
-                    formData.append('file', audioBlob, 'realtime_audio.wav');
-
-                    const response = await fetch('/upload', {
-                        method: 'POST',
-                        body: formData
-                    });
-
-                    const result = await response.json();
-                    const resultDiv = document.querySelector('#result');
-                    resultDiv.innerHTML = '';
-
-                    result.forEach((segment, index) => {
-                        const p = document.createElement('p');
-                        p.innerHTML = `<strong>Segment ${index + 1}:</strong><br>Text: ${segment.text}<br>Emotions: ${JSON.stringify(segment.emotions)}`;
-                        resultDiv.appendChild(p);
-                    });
-
-                    resultDiv.scrollIntoView({ behavior: 'smooth' });
-                };
-
-                mediaRecorder.start();
-                setTimeout(() => {
-                    mediaRecorder.stop();
-                }, 5000); // Stop recording after 5 seconds
-            }
         </script>
     </head>
     <body>
@@ -217,7 +183,6 @@ def index():
                 <input type="file" id="fileInput" name="file" accept=".mp3, .m4a, .mp4, .wav" required>
                 <button type="submit">Upload and Analyze</button>
             </form>
-            <button onclick="startRealtimeDetection()">Start Real-Time Detection</button>
             <div id="loading">
                 <div class="spinner"></div>
                 Analyzing audio, please wait...
@@ -248,13 +213,25 @@ def upload_file():
     if not wav_file_path:
         return jsonify({"error": "Failed to convert audio"}), 500
 
+    # Perform speaker diarization
+    diarization = diarization_pipeline(wav_file_path)
+
+    # Transcribe the audio
     result = whisper_model.transcribe(wav_file_path, verbose=False)
 
+    # Combine diarization and transcription results
     segments = []
     for seg in result['segments']:
+        # Find the speaker for this segment
+        speaker = None
+        for turn, _, speaker_id in diarization.itertracks(yield_label=True):
+            if seg['start'] >= turn.start and seg['end'] <= turn.end:
+                speaker = speaker_id
+                break
+
         text = seg['text']
         emotions = emotion_analyzer(text)
-        segments.append({"text": text, "emotions": emotions})
+        segments.append({"speaker": speaker, "text": text, "emotions": emotions})
 
     return jsonify(segments)
 
