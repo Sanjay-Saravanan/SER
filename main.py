@@ -169,44 +169,6 @@ def index():
 
                 resultDiv.scrollIntoView({ behavior: 'smooth' });
             }
-
-            async function startRealtimeDetection() {
-                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                const mediaRecorder = new MediaRecorder(stream);
-                let audioChunks = [];
-
-                mediaRecorder.ondataavailable = (event) => {
-                    audioChunks.push(event.data);
-                };
-
-                mediaRecorder.onstop = async () => {
-                    const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-                    const formData = new FormData();
-                    formData.append('file', audioBlob, 'realtime_audio.wav');
-
-                    const response = await fetch('/upload', {
-                        method: 'POST',
-                        body: formData
-                    });
-
-                    const result = await response.json();
-                    const resultDiv = document.querySelector('#result');
-                    resultDiv.innerHTML = '';
-
-                    result.forEach((segment, index) => {
-                        const p = document.createElement('p');
-                        p.innerHTML = `<strong>Segment ${index + 1}:</strong><br>Text: ${segment.text}<br>Emotions: ${JSON.stringify(segment.emotions)}`;
-                        resultDiv.appendChild(p);
-                    });
-
-                    resultDiv.scrollIntoView({ behavior: 'smooth' });
-                };
-
-                mediaRecorder.start();
-                setTimeout(() => {
-                    mediaRecorder.stop();
-                }, 5000); // Stop recording after 5 seconds
-            }
         </script>
     </head>
     <body>
@@ -217,7 +179,6 @@ def index():
                 <input type="file" id="fileInput" name="file" accept=".mp3, .m4a, .mp4, .wav" required>
                 <button type="submit">Upload and Analyze</button>
             </form>
-            <button onclick="startRealtimeDetection()">Start Real-Time Detection</button>
             <div id="loading">
                 <div class="spinner"></div>
                 Analyzing audio, please wait...
@@ -259,4 +220,4 @@ def upload_file():
     return jsonify(segments)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=False)
