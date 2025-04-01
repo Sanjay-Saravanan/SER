@@ -1,3 +1,4 @@
+from collections import defaultdict
 from flask import Flask, request, jsonify
 import os
 from werkzeug.utils import secure_filename
@@ -5,16 +6,19 @@ from pydub import AudioSegment
 import torch
 import whisper
 from transformers import pipeline
-import pyaudio
-import wave
-import threading
+import transformers
+import logging
+from pyannote.audio import Pipeline
 import warnings
-
+warnings.filterwarnings("ignore")  # Suppress all warnings
+transformers.logging.set_verbosity_error()
+logging.getLogger("transformers").setLevel(logging.ERROR)
+torch.backends.cuda.matmul.allow_tf32 = True
+torch.backends.cudnn.allow_tf32 = True
 
 app = Flask(__name__)
 UPLOAD_FOLDER = "uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 print(f"Device set to use {device}")
@@ -22,6 +26,13 @@ print(f"Device set to use {device}")
 whisper_model = whisper.load_model("large", device=device)
 emotion_analyzer = pipeline("text-classification", model="michellejieli/emotion_text_classifier",
                             device=0 if torch.cuda.is_available() else -1)
+
+# Initialize the speaker diarization pipeline
+diarization_pipeline = Pipeline.from_pretrained(
+    "pyannote/speaker-diarization-3.1",
+    use_auth_token=""
+)
+diarization_pipeline.to(torch.device(device))
 
 warnings.filterwarnings("ignore", category=UserWarning, message=".*weights_only=False.*")
 
@@ -39,11 +50,47 @@ def convert_audio_to_wav(file_path):
         wav_file = f"{base}.wav"
         audio = AudioSegment.from_file(file_path)
         audio.export(wav_file, format="wav")
-
         return wav_file
     except Exception as e:
         print(f"Audio conversion failed: {e}")
         return None
+
+def merge_speakers(diarization, max_speakers=2):
+    """
+    Merge similar speakers or limit the number of speakers to `max_speakers`.
+    """
+    speaker_durations = defaultdict(float)
+    for turn, _, speaker in diarization.itertracks(yield_label=True):
+        speaker_durations[speaker] += turn.end - turn.start
+
+    # Sort speakers by total duration and keep only the top `max_speakers`
+    sorted_speakers = sorted(speaker_durations.keys(), key=lambda x: speaker_durations[x], reverse=True)[:max_speakers]
+    speaker_mapping = {speaker: f"Speaker {i+1}" for i, speaker in enumerate(sorted_speakers)}
+
+    return speaker_mapping
+
+def assign_speaker_to_segment(segment, diarization, speaker_mapping):
+    """
+    Assign a speaker to a segment based on the diarization results.
+    """
+    start_time = segment['start']
+    end_time = segment['end']
+
+    # Find the speaker with the most overlap with this segment
+    best_speaker = None
+    max_overlap = 0
+
+    for turn, _, speaker in diarization.itertracks(yield_label=True):
+        overlap_start = max(turn.start, start_time)
+        overlap_end = min(turn.end, end_time)
+        overlap_duration = max(0, overlap_end - overlap_start)
+
+        if overlap_duration > max_overlap:
+            max_overlap = overlap_duration
+            best_speaker = speaker
+
+    # Assign the best speaker or default to "Unknown"
+    return speaker_mapping.get(best_speaker, "Unknown")
 
 @app.route('/')
 def index():
@@ -60,7 +107,7 @@ def index():
                 font-family: 'Poppins', sans-serif;
                 background-color: #0B0C10;
                 color: #C5C6C7;
-                margin: 5;
+                margin: 0;
                 padding: 0;
                 display: flex;
                 justify-content: center;
@@ -163,7 +210,7 @@ def index():
 
                 result.forEach((segment, index) => {
                     const p = document.createElement('p');
-                    p.innerHTML = `<strong>Segment ${index + 1}:</strong><br>Text: ${segment.text}<br>Emotions: ${JSON.stringify(segment.emotions)}`;
+                    p.innerHTML = `<strong>${segment.speaker}:</strong><br>Text: ${segment.text}<br>Emotions: ${segment.emotions}`;
                     resultDiv.appendChild(p);
                 });
 
@@ -209,13 +256,23 @@ def upload_file():
     if not wav_file_path:
         return jsonify({"error": "Failed to convert audio"}), 500
 
+    # Perform speaker diarization
+    diarization = diarization_pipeline(wav_file_path)
+    
+    # Merge speakers to limit the number of speakers
+    speaker_mapping = merge_speakers(diarization, max_speakers=3)
+
+    # Perform transcription
     result = whisper_model.transcribe(wav_file_path, verbose=False)
 
+    # Map speakers to transcription segments
     segments = []
     for seg in result['segments']:
-        text = seg['text']
-        emotions = emotion_analyzer(text)
-        segments.append({"text": text, "emotions": emotions})
+        speaker_label = assign_speaker_to_segment(seg, diarization, speaker_mapping)
+
+        # Analyze emotions
+        emotions = emotion_analyzer(seg['text'])
+        segments.append({"speaker": speaker_label, "text": seg['text'], "emotions": emotions[0]['label']})
 
     return jsonify(segments)
 
