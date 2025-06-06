@@ -7,13 +7,10 @@ This project integrates **speech-to-text transcription**, **speaker diarization*
 ## 📷 Project Preview
 
 ### 🎯 System Architecture
-> 📍 Add the **"Fig 6.1 System Architecture"** image here.
 
-```
-📂 Where to put: Place in `assets/images/system_architecture.png`
-📋 How to use: In README, reference it as:
 ![System Architecture](assets/images/system_architecture.png)
-```
+
+> 📍 **"Fig 6.1 System Architecture"**
 
 ---
 
