@@ -52,7 +52,7 @@ source venv/bin/activate
 pip install -r requirements.txt
 
 # Run the app
-python app.py
+python main.py
 ```
 
 > ☁️ For Docker setup, refer to `Dockerfile` and `docker-compose.yml`.
@@ -85,25 +85,10 @@ python app.py
 
 > Add a screen recording or image from the dashboard if possible.
 
-You can test this by running `app.py` and navigating to `http://localhost:5000` in your browser.
+You can test this by running `main.py` and navigating to `http://localhost:5000` in your browser.
 
 ---
 
-## 🧩 Folder Structure
-
-```
-├── app.py                     # Flask web server
-├── utils/                     # Helper modules
-├── models/                    # Pre-trained models
-├── assets/
-│   ├── images/                # System diagrams
-│   └── screenshots/           # UI output screenshots
-├── uploads/                  # Temporary audio storage
-├── requirements.txt
-└── README.md
-```
-
----
 
 ## 🧠 Future Work
 
