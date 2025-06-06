@@ -4,17 +4,15 @@ This project integrates **speech-to-text transcription**, **speaker diarization*
 
 ---
 
-## 📷 Project Preview
+## Project Preview
 
-### 🎯 System Architecture
+### System Architecture
 
 ![System Architecture](assests/system_architecture.png)
 
-> 📍 **"Fig 6.1 System Architecture"**
-
 ---
 
-## 🚀 Features
+## Features
 
 - 🎙️ Real-time speech-to-text using OpenAI’s **Whisper**
 - 👥 Speaker Diarization via **pyannote.audio**
@@ -25,7 +23,7 @@ This project integrates **speech-to-text transcription**, **speaker diarization*
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 | Component               | Technology                             |
 |------------------------|-----------------------------------------|
@@ -44,19 +42,19 @@ git clone https://github.com/yourusername/speech-emotion-recognition.git
 cd speech-emotion-recognition
 
 # Setup environment
-python3 -m venv venv
-source venv/bin/activate
+python3 -m venv SER
+Windows: .\SER\Scripts\activate
+Linux: source SER/bin/activate
 pip install -r requirements.txt
 
 # Run the app
 python main.py
 ```
 
-> ☁️ For Docker setup, refer to `Dockerfile` and `docker-compose.yml`.
 
 ---
 
-## 🧪 How It Works
+## How It Works
 
 1. **Upload Audio**: Accepts `.wav`, `.mp3`, `.mp4`, and `.m4a` files.
 2. **Preprocessing**: Audio converted to 16kHz mono WAV, noise-reduced.
@@ -65,20 +63,23 @@ python main.py
 5. **Emotion Analysis**: Uses Hugging Face transformers to detect emotion per speaker segment.
 6. **Output**: Speaker-wise emotion breakdown and overall call sentiment.
 
-> 📍 You can insert screenshots of each of the following:
-> - Module Loading (Fig 7.1a)
-> - System Resource Usage (Fig 7.1b)
-> - Final Output with Emotion & Diarization (Fig 7.1c, 7.1d)
+---
 
-```
-📂 Where to put: Place in `assets/screenshots/`
-📋 How to use:
-![Final Output](assets/screenshots/final_output_emotions.png)
-```
+## Results
+
+### Web
+
+![Web](assets/final_output_emotions.png)
+
+### System Usage Graph
+
+![Web](assets/system_usage.png)
 
 ---
 
-## 📊 Demo
+
+
+## Demo
 
 > Add a screen recording or image from the dashboard if possible.
 
@@ -87,7 +88,7 @@ You can test this by running `main.py` and navigating to `http://localhost:5000`
 ---
 
 
-## 🧠 Future Work
+## Future Work
 
 - 🔊 Add acoustic-based emotion cues (pitch, MFCCs)
 - 📈 Advanced dashboards with charts (e.g., Plotly.js)
@@ -96,15 +97,15 @@ You can test this by running `main.py` and navigating to `http://localhost:5000`
 
 ---
 
-## ⚖️ Ethical Considerations
+## Ethical Considerations
 
-- 🛡️ GDPR/CCPA compliant data handling
-- ⚖️ Bias audits across accents, genders
-- 🔒 No persistent audio storage
+- GDPR/CCPA compliant data handling
+- Bias audits across accents, genders
+
 
 ---
 
-## 📚 References
+## References
 
 1. [Whisper by OpenAI](https://github.com/openai/whisper)
 2. [pyannote.audio](https://github.com/pyannote/pyannote-audio)
@@ -112,7 +113,7 @@ You can test this by running `main.py` and navigating to `http://localhost:5000`
 
 ---
 
-## 👨‍🎓 Author
+## Author
 
 **Sanjay S**  
 B.Tech - Information Technology  
