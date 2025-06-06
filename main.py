@@ -28,7 +28,7 @@ try:
     )
     diarization_pipeline = Pipeline.from_pretrained(
         "pyannote/speaker-diarization-3.1",
-        use_auth_token="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"
+        use_auth_token=""
     )
     diarization_pipeline.to(torch.device(device))
 except Exception as e:
