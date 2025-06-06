@@ -67,23 +67,17 @@ python main.py
 
 ## Results
 
-### Web
+### Model Loading
 
-![Web](assets/final_output_emotions.png)
+![Model Loading](assets/model_loading.png)
 
 ### System Usage Graph
 
-![Web](assets/system_usage.png)
+![System Usage Graph](assets/system_usage.png)
 
----
+### Web Dashboard
 
-
-
-## Demo
-
-> Add a screen recording or image from the dashboard if possible.
-
-You can test this by running `main.py` and navigating to `http://localhost:5000` in your browser.
+![Web](assets/final_output_emotions.png)
 
 ---
 
@@ -95,7 +89,9 @@ You can test this by running `main.py` and navigating to `http://localhost:5000`
 - 🔁 Real-time streaming analysis
 - 🤖 Multimodal (facial + vocal) emotion detection
 
+
 ---
+
 
 ## Ethical Considerations
 
@@ -105,13 +101,16 @@ You can test this by running `main.py` and navigating to `http://localhost:5000`
 
 ---
 
+
 ## References
 
 1. [Whisper by OpenAI](https://github.com/openai/whisper)
 2. [pyannote.audio](https://github.com/pyannote/pyannote-audio)
 3. [Hugging Face Transformers](https://huggingface.co/models)
 
+
 ---
+
 
 ## Author
 
