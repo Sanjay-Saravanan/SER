@@ -8,7 +8,7 @@ This project integrates **speech-to-text transcription**, **speaker diarization*
 
 ### System Architecture
 
-![System Architecture](assests/system_architecture.png)
+![System Architecture](assets/system_architecture.png)
 
 ---
 
