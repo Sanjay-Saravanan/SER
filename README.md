@@ -1,4 +1,4 @@
-# 📢 Speech Emotion Recognition with Speaker Diarization and Emotion Analysis - Patent Filed / Patent Pending
+# 📢 Speech Emotion Recognition with Speaker Diarization and Emotion Analysis - Patent Published - 202541115982
 
 This project integrates **speech-to-text transcription**, **speaker diarization**, and **emotion recognition** into a single system using state-of-the-art AI models. It enables real-time emotional analysis of conversations with multiple speakers and outputs both per-speaker emotion timelines and overall sentiment analysis.
 
@@ -32,25 +32,6 @@ This project integrates **speech-to-text transcription**, **speaker diarization*
 | Audio Processing       | LibROSA, PyDub                         |
 | Frontend               | HTML5, CSS3, JavaScript                |
 | Deployment             | Docker, AWS/GCP                        |
-
----
-
-## 💻 Installation & Setup
-
-```bash
-git clone https://github.com/yourusername/speech-emotion-recognition.git
-cd speech-emotion-recognition
-
-# Setup environment
-python3 -m venv SER
-Windows: .\SER\Scripts\activate
-Linux: source SER/bin/activate
-pip install -r requirements.txt
-
-# Run the app
-python main.py
-```
-
 
 ---
 
@@ -118,4 +99,5 @@ python main.py
 B.Tech - Information Technology  
 VIT Vellore  
 Under guidance of Dr. Vellingiri J
+
 
